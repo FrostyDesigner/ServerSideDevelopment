@@ -11,7 +11,7 @@ exports.local = passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-exports.getToken = function(user) {
+exports.getToken = user => {
     return jwt.sign(user, config.secretKey, {expiresIn: 3600});
 };
 
@@ -39,3 +39,17 @@ exports.jwtPassport = passport.use(
 
 exports.verifyUser = passport.authenticate('jwt', {session: false});
 
+// Create and export a new function named verifyAdmin() in the authenticate.js file.
+// Allow admins to pass to the next middleware: 
+// You will have the verifyAdmin() function return next(); 
+// if the user is an admin. If not, create a new Error object with the message "You are not authorized to perform this operation!", 
+// set its status property to 403, and return next(err).
+exports.verifyAdmin = (req, res, next) => {
+    if (req.user.admin){
+        return next();
+    } else {
+        const err = new Error('You are not authorized to perform this operation!');
+        err.status = 403 ;
+        return next(err);
+    }
+};
