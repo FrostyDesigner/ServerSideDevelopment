@@ -2,12 +2,13 @@ const express = require('express');
 const User = require('../models/user');
 const passport = require('passport');
 const authenticate = require('../authenticate');
+const cors = require('./cors');
 
 const router = express.Router();
 
 //Allow admins to access users documents
 //When a GET request is sent to the /users path, respond by checking if the request is from an admin user
-router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     User.find()
     //If so, then return the details of all existing user documents.
     .then(users => {
@@ -18,7 +19,7 @@ router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, (req, res, ne
     .catch(err => next(err));
 });
 
-router.post('/signup', (req, res) => {
+router.post('/signup', cors.corsWithOptions, (req, res) => {
     User.register(new User({username: req.body.username}),
     req.body.password, (err, user) => {
         if (err) {
@@ -49,14 +50,14 @@ router.post('/signup', (req, res) => {
     });
 });
 
-router.post('/login', passport.authenticate('local'), (req, res) => {
+router.post('/login', cors.corsWithOptions, passport.authenticate('local'), (req, res) => {
     const token = authenticate.getToken({_id: req.user._id});
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
     res.json({success: true, token: token, status: 'You are successfully logged in!'});
 });
 
-router.get('/logout', (req, res, next) => {
+router.get('/logout', cors.corsWithOptions, (req, res, next) => {
     if (req.session) {
       req.session.destroy();
       res.clearCookie('session-id');
